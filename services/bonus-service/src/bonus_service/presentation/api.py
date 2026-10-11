@@ -1,3 +1,4 @@
+from collections.abc import Awaitable, Callable
 from typing import Annotated
 from uuid import UUID
 
@@ -19,7 +20,9 @@ Username = Annotated[
 ]
 
 
-def create_router(service: BonusService) -> APIRouter:
+def create_router(
+    service: BonusService, health_check: Callable[[], Awaitable[None]] | None = None
+) -> APIRouter:
     router = APIRouter()
 
     def get_service() -> BonusService:
@@ -32,6 +35,8 @@ def create_router(service: BonusService) -> APIRouter:
         operation_id="getHealth",
     )
     async def health() -> HealthResponse:
+        if health_check is not None:
+            await health_check()
         return HealthResponse()
 
     @router.get(

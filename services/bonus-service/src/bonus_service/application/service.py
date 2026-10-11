@@ -25,7 +25,7 @@ class BonusService:
             if account is None:
                 account = Account(username)
                 await transaction.repository.save_account(account)
-                await transaction.commit()
+            await transaction.commit()
             return account
 
     async def apply_purchase(

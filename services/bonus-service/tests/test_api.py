@@ -164,7 +164,10 @@ async def test_foreign_operation_and_changed_payload(client: AsyncClient) -> Non
 
 async def test_app_instances_do_not_share_state() -> None:
     async with AsyncClient(
-        transport=ASGITransport(app=create_app()), base_url="http://first"
+        transport=ASGITransport(
+            app=create_app(BonusService(InMemoryStore().transaction, FixedClock()))
+        ),
+        base_url="http://first",
     ) as first:
         await first.put(
             f"/internal/v1/privilege/operations/{uuid4()}",
@@ -172,7 +175,10 @@ async def test_app_instances_do_not_share_state() -> None:
             json={"price": 1500, "paidFromBalance": False},
         )
     async with AsyncClient(
-        transport=ASGITransport(app=create_app()), base_url="http://second"
+        transport=ASGITransport(
+            app=create_app(BonusService(InMemoryStore().transaction, FixedClock()))
+        ),
+        base_url="http://second",
     ) as second:
         response = await second.get("/internal/v1/privilege", headers=HEADERS)
         assert response.json()["balance"] == 0
