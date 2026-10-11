@@ -4,12 +4,49 @@ Python 3.13.15, FastAPI, Pydantic v2, SQLAlchemy 2, asyncpg, Alembic.
 Рабочее приложение использует PostgreSQL. Unit- и HTTP-тесты внедряют InMemory
 и не требуют подключения БД.
 
+## Запуск через Docker Compose
+
+Из корня репозитория:
+
+```bash
+docker compose up --build -d --wait
+docker compose logs bonus-service
+```
+
+Параметры можно задать в корневом .env по образцу .env.example.
+Для локальной лабораторной defaults: POSTGRES_PASSWORD=postgres,
+BONUS_DB_PASSWORD=test, POSTGRES_PORT=5432, BONUS_PORT=8050.
+Пароль Bonus передается отдельно и корректно URL-кодируется внутри контейнера.
+
+Если Docker на Linux не разрешает DNS во время загрузки зависимостей, можно
+собирать с сетью хоста: BONUS_BUILD_NETWORK=host docker compose up --build -d --wait.
+Это меняет только сеть сборки; работающие контейнеры используют сеть Compose.
+
+PostgreSQL 13 хранит данные в volume db-data. Инициализация создает роль bonus
+и базу bonus; таблицы создаются исключительно Alembic.
+Одноразовый сервис postgres-init также создает недостающую БД на уже
+существующем volume, не удаляя данные и не меняя пароли существующих ролей.
+При существующем volume задайте прежний POSTGRES_PASSWORD и пароль роли bonus.
+
+Bonus ожидает успешный healthcheck PostgreSQL и завершение postgres-init.
+Перед каждым запуском выполняется alembic upgrade head; при ошибке миграции
+приложение не запускается. Контейнер использует Python 3.13.15 и зависимости
+из uv.lock, установленные через uv без dev-пакетов, и работает от пользователя bonus.
+
+Проверка: http://localhost:8050/manage/health.
+Swagger UI: http://localhost:8050/docs.
+
+Остановка с сохранением данных:
+
+```bash
+docker compose down
+```
+
 ## Настройка и запуск
 
 Создайте логическую БД bonus и отдельного пользователя, имеющего права только
 на эту БД. Один PostgreSQL может обслуживать bonus, flight и ticket; каждый
-сервис подключается только к своей базе. Скрипты PostgreSQL в корне шаблона
-пока требуют отдельной настройки и не заменяют миграции Bonus.
+сервис подключается только к своей базе. Таблицы создаются миграциями Alembic.
 
 Из корня репозитория:
 
