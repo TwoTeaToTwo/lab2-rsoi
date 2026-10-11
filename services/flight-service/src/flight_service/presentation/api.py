@@ -1,3 +1,4 @@
+from collections.abc import Awaitable, Callable
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Path, Query
@@ -16,11 +17,15 @@ class HealthResponse(BaseModel):
     status: Literal["UP"] = "UP"
 
 
-def create_router(service: FlightService) -> APIRouter:
+def create_router(
+    service: FlightService, health_check: Callable[[], Awaitable[None]] | None = None
+) -> APIRouter:
     router = APIRouter()
 
     @router.get("/manage/health", operation_id="getHealth", tags=["Management"])
     async def health() -> HealthResponse:
+        if health_check is not None:
+            await health_check()
         return HealthResponse()
 
     @router.get(
