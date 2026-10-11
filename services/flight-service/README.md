@@ -73,4 +73,42 @@ uv run --all-packages mypy services/flight-service/src services/flight-service/m
 
 Окружение миграций Flight проверяется отдельно, поскольку env.py других сервисов
 имеет такое же имя модуля. Версии миграций входят также в общий прогон mypy.
-Dockerfile и подключение Flight к Compose остаются следующим этапом.
+## Docker Compose
+
+Из корня репозитория:
+
+```bash
+docker compose up --build -d --wait
+docker compose logs flight-service
+```
+
+Compose запускает PostgreSQL 13, Bonus, Ticket и Flight. Роль flight и база
+flight создаются шагом postgres-init, включая запуск на существующем volume.
+Существующие базы и пароли не меняются. Таблицы и тестовые данные создаются
+миграцией Flight. Повторное применение миграций не дублирует рейс и аэропорты.
+
+Flight ожидает healthcheck PostgreSQL и успешное завершение postgres-init,
+затем выполняет alembic upgrade head перед запуском приложения.
+При ошибке миграции приложение не запускается.
+Python 3.13.15; зависимости устанавливаются uv по uv.lock без dev-пакетов.
+Контейнер работает от пользователя flight. Данные сохраняются в volume db-data.
+
+Параметры из .env.example: FLIGHT_DB_PASSWORD=test, FLIGHT_PORT=8060.
+При существующей роли укажите ее действующий пароль. Пароль передается отдельно,
+URL подключения строится с корректным кодированием.
+
+Health: http://localhost:8060/manage/health. Swagger: http://localhost:8060/docs.
+
+Если DNS сборки Docker на Linux не работает:
+
+```bash
+BONUS_BUILD_NETWORK=host TICKET_BUILD_NETWORK=host FLIGHT_BUILD_NETWORK=host docker compose up --build -d --wait
+```
+
+Строгая проверка кода Flight, включая миграции и контейнерный запуск:
+
+```bash
+uv run --all-packages mypy services/flight-service/src services/flight-service/migrations services/flight-service/docker
+```
+
+Остановка с сохранением данных: docker compose down.
