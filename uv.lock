@@ -1,11 +1,12 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.13.15, <3.14"
 
 [manifest]
 members = [
     "bonus-service",
     "flight-booking",
+    "flight-service",
 ]
 
 [[package]]
@@ -195,6 +196,25 @@ dev = [
     { name = "pytest-asyncio", specifier = ">=0.25,<2" },
     { name = "pytest-cov", specifier = ">=6,<8" },
     { name = "ruff", specifier = ">=0.11,<1" },
+]
+
+[[package]]
+name = "flight-service"
+version = "0.1.0"
+source = { editable = "services/flight-service" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115,<1" },
+    { name = "pydantic", specifier = ">=2.10,<3" },
+    { name = "pydantic-settings", specifier = ">=2.7,<3" },
+    { name = "uvicorn", specifier = ">=0.34,<1" },
 ]
 
 [[package]]

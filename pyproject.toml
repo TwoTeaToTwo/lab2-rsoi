@@ -8,7 +8,7 @@ dependencies = []
 package = false
 
 [tool.uv.workspace]
-members = ["services/bonus-service"]
+members = ["services/bonus-service", "services/flight-service"]
 
 [dependency-groups]
 dev = [
@@ -21,7 +21,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["services/bonus-service/tests"]
+testpaths = ["services/bonus-service/tests", "services/flight-service/tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 addopts = "-ra"
@@ -30,7 +30,10 @@ addopts = "-ra"
 python_version = "3.13"
 strict = true
 plugins = ["pydantic.mypy"]
-files = ["services/bonus-service/src", "services/bonus-service/tests"]
+files = [
+    "services/bonus-service/src", "services/bonus-service/tests",
+    "services/flight-service/src", "services/flight-service/tests",
+]
 
 [tool.pydantic-mypy]
 init_forbid_extra = true
@@ -45,7 +48,7 @@ line-length = 100
 select = ["E", "F", "I", "UP", "B", "ASYNC"]
 
 [tool.coverage.run]
-source = ["bonus_service"]
+source = ["bonus_service", "flight_service"]
 branch = true
 
 [tool.coverage.report]
