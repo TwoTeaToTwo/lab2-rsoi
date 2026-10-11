@@ -1,10 +1,42 @@
+from datetime import datetime
 from uuid import uuid4
 
 import pytest
+from bonus_service.application.service import BonusService
+from bonus_service.infrastructure.memory import InMemoryStore
 from bonus_service.main import create_app
 from httpx import ASGITransport, AsyncClient
 
+from tests.conftest import FixedClock
+
 HEADERS = {"X-User-Name": "alice"}
+
+
+async def test_unexpected_error_returns_json_and_rolls_back() -> None:
+    class FailingClock:
+        def now(self) -> datetime:
+            raise RuntimeError("Sensitive internal details")
+
+    store = InMemoryStore()
+    service = BonusService(store.transaction, FailingClock())
+    async with AsyncClient(
+        transport=ASGITransport(app=create_app(service), raise_app_exceptions=False),
+        base_url="http://bonus",
+    ) as client:
+        response = await client.put(
+            f"/internal/v1/privilege/operations/{uuid4()}",
+            headers=HEADERS,
+            json={"price": 1500, "paidFromBalance": False},
+        )
+    assert response.status_code == 500
+    assert response.headers["content-type"] == "application/json"
+    assert response.json() == {"message": "Internal server error"}
+    assert store.accounts == {}
+    assert store.operations == {}
+    healthy = BonusService(store.transaction, FixedClock())
+    result, created = await healthy.apply_purchase("alice", uuid4(), 1500, False)
+    assert created
+    assert result.privilege.balance == 150
 
 
 async def test_health_and_initial_account(client: AsyncClient) -> None:

@@ -1,3 +1,5 @@
+import logging
+
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -15,6 +17,8 @@ from bonus_service.presentation.schemas import (
     ValidationErrorResponse,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def create_app(service: BonusService | None = None) -> FastAPI:
     """Composition root. Tests may inject a use case backed by a separate store."""
@@ -23,6 +27,14 @@ def create_app(service: BonusService | None = None) -> FastAPI:
         service = BonusService(store.transaction, SystemClock())
     app = FastAPI(title="Bonus Service", version="0.1.0")
     app.include_router(create_router(service))
+
+    @app.exception_handler(Exception)
+    async def internal_error(request: Request, error: Exception) -> JSONResponse:
+        logger.error("Unhandled Bonus Service error", exc_info=error)
+        return JSONResponse(
+            status_code=500,
+            content=ErrorResponse(message="Internal server error").model_dump(),
+        )
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, error: RequestValidationError) -> JSONResponse:
