@@ -1,3 +1,4 @@
+from collections.abc import Awaitable, Callable
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -22,7 +23,9 @@ class HealthResponse(BaseModel):
     status: Literal["UP"] = "UP"
 
 
-def create_router(service: TicketService) -> APIRouter:
+def create_router(
+    service: TicketService, health_check: Callable[[], Awaitable[None]] | None = None
+) -> APIRouter:
     router = APIRouter()
     errors: dict[int | str, dict[str, object]] = {
         400: {"model": ValidationErrorResponse},
@@ -32,6 +35,8 @@ def create_router(service: TicketService) -> APIRouter:
 
     @router.get("/manage/health", operation_id="getHealth", tags=["Management"])
     async def health() -> HealthResponse:
+        if health_check is not None:
+            await health_check()
         return HealthResponse()
 
     @router.get(
