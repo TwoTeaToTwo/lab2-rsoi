@@ -71,4 +71,34 @@ uv run --all-packages pytest services/ticket-service/tests/ticket_tests/test_pos
 
 Тесты записывают данные с уникальными владельцами. Используйте тестовую БД.
 Alembic-скрипты находятся в migrations, как и в Bonus Service.
-Dockerfile и подключение Ticket к Compose остаются следующим этапом.
+## Docker Compose
+
+Из корня репозитория:
+
+```bash
+docker compose up --build -d --wait
+docker compose logs ticket-service
+```
+
+Compose запускает PostgreSQL 13, Bonus и Ticket. Роль ticket и база ticket
+создаются шагом postgres-init, включая запуск на существующем volume.
+Существующие базы и пароли не меняются. Таблицы создает только Alembic.
+Ticket ожидает healthcheck PostgreSQL и успешное завершение postgres-init,
+затем выполняет alembic upgrade head перед запуском приложения.
+Ошибка миграции не позволяет запустить приложение.
+
+Параметры из .env.example: TICKET_DB_PASSWORD=test, TICKET_PORT=8070.
+При существующей роли укажите ее действующий пароль.
+Пароль передается отдельно, URL подключения строится с корректным кодированием.
+Python 3.13.15; зависимости устанавливаются через uv по uv.lock без dev-пакетов.
+Контейнер работает от пользователя ticket. Данные сохраняются в volume db-data.
+
+Health: http://localhost:8070/manage/health. Swagger: http://localhost:8070/docs.
+
+Если DNS сборки Docker на Linux не работает:
+
+```bash
+BONUS_BUILD_NETWORK=host TICKET_BUILD_NETWORK=host docker compose up --build -d --wait
+```
+
+Остановка с сохранением данных: docker compose down.

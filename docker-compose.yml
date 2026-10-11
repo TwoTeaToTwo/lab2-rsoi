@@ -7,6 +7,7 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-postgres}"
       POSTGRES_DB: postgres
       BONUS_DB_PASSWORD: "${BONUS_DB_PASSWORD:-test}"
+      TICKET_DB_PASSWORD: "${TICKET_DB_PASSWORD:-test}"
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./postgres/:/docker-entrypoint-initdb.d/:ro
@@ -31,6 +32,7 @@ services:
       PGDATABASE: postgres
       PGPASSWORD: "${POSTGRES_PASSWORD:-postgres}"
       BONUS_DB_PASSWORD: "${BONUS_DB_PASSWORD:-test}"
+      TICKET_DB_PASSWORD: "${TICKET_DB_PASSWORD:-test}"
     volumes:
       - ./postgres/:/docker-entrypoint-initdb.d/:ro
     entrypoint: ["bash", "/docker-entrypoint-initdb.d/20-create-databases.sh"]
@@ -58,6 +60,34 @@ services:
         - python
         - -c
         - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8050/manage/health', timeout=3)"
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  ticket-service:
+    build:
+      context: .
+      dockerfile: services/ticket-service/Dockerfile
+      network: "${TICKET_BUILD_NETWORK:-default}"
+    restart: on-failure
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+    environment:
+      TICKET_DB_PASSWORD: "${TICKET_DB_PASSWORD:-test}"
+      TICKET_HOST: 0.0.0.0
+      TICKET_PORT: "8070"
+    ports:
+      - "${TICKET_PORT:-8070}:8070"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8070/manage/health', timeout=3)"
       interval: 5s
       timeout: 5s
       retries: 20

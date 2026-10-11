@@ -9,3 +9,7 @@ export PGDATABASE="${PGDATABASE:-postgres}"
 # Do not recreate existing databases or change existing roles' passwords.
 psql -v ON_ERROR_STOP=1 -v bonus_password="$BONUS_DB_PASSWORD" \
   -f /docker-entrypoint-initdb.d/scripts/bonus.sql
+
+: "${TICKET_DB_PASSWORD:?TICKET_DB_PASSWORD must be set}"
+psql -v ON_ERROR_STOP=1 -v ticket_password="$TICKET_DB_PASSWORD" \
+  -f /docker-entrypoint-initdb.d/scripts/ticket.sql

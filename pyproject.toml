@@ -38,7 +38,7 @@ files = [
     "services/bonus-service/migrations", "services/bonus-service/docker",
     "services/flight-service/src", "services/flight-service/tests",
     "services/ticket-service/src", "services/ticket-service/tests",
-    "services/ticket-service/migrations",
+    "services/ticket-service/migrations", "services/ticket-service/docker",
 ]
 
 [tool.pydantic-mypy]
