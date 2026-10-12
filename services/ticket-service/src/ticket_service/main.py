@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 
 
 def create_app(service: TicketService | None = None) -> FastAPI:
-    """Composition root. Tests may inject a use case backed by a separate store."""
     engine = None
     health_check = None
     if service is None:
