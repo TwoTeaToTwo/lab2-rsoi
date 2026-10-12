@@ -7,6 +7,7 @@ members = [
     "bonus-service",
     "flight-booking",
     "flight-service",
+    "gateway",
     "ticket-service",
 ]
 
@@ -266,6 +267,27 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.10,<3" },
     { name = "pydantic-settings", specifier = ">=2.7,<3" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0,<2.1" },
+    { name = "uvicorn", specifier = ">=0.34,<1" },
+]
+
+[[package]]
+name = "gateway"
+version = "0.1.0"
+source = { editable = "services/gateway" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.115,<1" },
+    { name = "httpx", specifier = ">=0.28,<0.29" },
+    { name = "pydantic", specifier = ">=2.10,<3" },
+    { name = "pydantic-settings", specifier = ">=2.7,<3" },
     { name = "uvicorn", specifier = ">=0.34,<1" },
 ]
 

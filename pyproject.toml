@@ -11,7 +11,7 @@ dependencies = [
 package = false
 
 [tool.uv.workspace]
-members = ["services/bonus-service", "services/flight-service", "services/ticket-service"]
+members = ["services/bonus-service", "services/flight-service", "services/ticket-service", "services/gateway"]
 
 [dependency-groups]
 dev = [
@@ -24,7 +24,7 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["services/bonus-service/tests", "services/flight-service/tests", "services/ticket-service/tests"]
+testpaths = ["services/bonus-service/tests", "services/flight-service/tests", "services/ticket-service/tests", "services/gateway/tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 addopts = "-ra"
@@ -40,6 +40,7 @@ files = [
     "services/flight-service/migrations/versions",
     "services/ticket-service/src", "services/ticket-service/tests",
     "services/ticket-service/migrations", "services/ticket-service/docker",
+    "services/gateway/src", "services/gateway/tests",
 ]
 
 [tool.pydantic-mypy]
@@ -55,7 +56,7 @@ line-length = 100
 select = ["E", "F", "I", "UP", "B", "ASYNC"]
 
 [tool.coverage.run]
-source = ["bonus_service", "flight_service", "ticket_service"]
+source = ["bonus_service", "flight_service", "ticket_service", "gateway"]
 branch = true
 
 [tool.coverage.report]

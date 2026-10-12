@@ -8,6 +8,7 @@ COPY pyproject.toml uv.lock .python-version ./
 COPY services/bonus-service/pyproject.toml services/bonus-service/pyproject.toml
 COPY services/flight-service/pyproject.toml services/flight-service/pyproject.toml
 COPY services/ticket-service/pyproject.toml services/ticket-service/pyproject.toml
+COPY services/gateway/pyproject.toml services/gateway/pyproject.toml
 COPY services/bonus-service/src services/bonus-service/src
 RUN uv sync --frozen --package bonus-service --no-dev --no-editable
 

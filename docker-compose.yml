@@ -123,5 +123,32 @@ services:
       retries: 20
       start_period: 15s
 
+  gateway:
+    build:
+      context: .
+      dockerfile: services/gateway/Dockerfile
+      network: "${GATEWAY_BUILD_NETWORK:-default}"
+    restart: on-failure
+    depends_on:
+      flight-service:
+        condition: service_healthy
+      ticket-service:
+        condition: service_healthy
+      bonus-service:
+        condition: service_healthy
+    environment:
+      GATEWAY_FLIGHT_URL: http://flight-service:8060
+      GATEWAY_TICKET_URL: http://ticket-service:8070
+      GATEWAY_BONUS_URL: http://bonus-service:8050
+      GATEWAY_PORT: "8080"
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/manage/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
 volumes:
   db-data:
